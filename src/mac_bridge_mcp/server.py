@@ -9,7 +9,8 @@ import httpx
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
-CONFIG_PATH = Path(__file__).parent.parent.parent / "config.json"
+PROJECT_DIR = Path("/Users/jarlesandnes/ai-projects/mac-bridge-mcp")
+CONFIG_PATH = PROJECT_DIR / "config.json"
 
 _http_mode = "--http" in sys.argv
 

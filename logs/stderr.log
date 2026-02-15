@@ -4164,3 +4164,86 @@ INFO:     Uvicorn running on http://0.0.0.0:18791 (Press CTRL+C to quit)
                              session ID:                                        
                              fe6cdbf35a1643669003                               
                              31196d8c2e37                                       
+[02/15/26 16:21:15] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             dc8c1b33071d42cea7b7                               
+                             e0a46ef105ef                                       
+                    INFO     Processing request of type            server.py:720
+                             ListToolsRequest                                   
+[02/15/26 16:21:20] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             cdbdd5d5b17e4adf8dc6                               
+                             30094e3929c6                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+[02/15/26 16:21:29] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             e77d6dac0eaf45cbb3b5                               
+                             894a96e25c90                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+[02/15/26 16:21:34] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             7c71ae02e0bb42a6b458                               
+                             94e826c4caa8                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+[02/15/26 16:21:57] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             63f82969644443d2bb96                               
+                             b45f0429892b                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+[02/15/26 16:22:25] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             68b3e3a4524741beb330                               
+                             3f6f2cbb4bd3                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+[02/15/26 16:22:35] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             4eded9a8ec0746908dd2                               
+                             0b5435b1eaa4                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+[02/15/26 16:22:46] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             f70df60986fd47a4b5b7                               
+                             89113950bc8e                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+INFO:     Started server process [19513]
+INFO:     Waiting for application startup.
+[02/15/26 16:23:16] INFO     StreamableHTTP       streamable_http_manager.py:116
+                             session manager                                    
+                             started                                            
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:18791 (Press CTRL+C to quit)
+[02/15/26 16:23:18] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             9768889d8ec0404ca21b                               
+                             3d62255de168                                       
+[02/15/26 16:25:32] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             cf8aa87fdc194e5b89f8                               
+                             3cc6b73cc9b6                                       
+                    INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             0c138afbc4fb40f4ae0a                               
+                             2216c9a5b605                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+                    INFO     HTTP Request: GET                   _client.py:1740
+                             https://192.168.68.107/clip/v2/reso                
+                             urce/light "HTTP/1.1 200 OK"                       
