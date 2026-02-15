@@ -227,6 +227,196 @@ async def hue_activate_scene(scene_id: str) -> str:
         return f"Error {resp.status_code}: {resp.text}"
 
 
+# ---------------------------------------------------------------------------
+# Vaillant heating tools
+# ---------------------------------------------------------------------------
+
+
+def _vaillant_config() -> tuple[str, str, str, str] | None:
+    """Return (email, password, brand, country) or None if not configured."""
+    v = _load_config().get("vaillant", {})
+    email = v.get("email")
+    password = v.get("password")
+    if not email or not password:
+        return None
+    return email, password, v.get("brand", "vaillant"), v.get("country", "czechrepublic")
+
+
+@mcp.tool()
+async def vaillant_status() -> str:
+    """Get current status of the Vaillant heating system.
+
+    Returns water pressure, outdoor temperature, zone temperatures,
+    hot water status, and holiday mode status.
+    """
+    cfg = _vaillant_config()
+    if not cfg:
+        return "Error: Vaillant not configured. Set email and password in config.json"
+    email, password, brand, country = cfg
+
+    from myPyllant.api import MyPyllantAPI
+
+    lines = []
+    async with MyPyllantAPI(email, password, brand, country) as api:
+        async for system in api.get_systems():
+            lines.append(f"System: {system.home.home_name or system.home.nomenclature}")
+            lines.append(f"Water pressure: {system.water_pressure} bar")
+            lines.append(f"Outdoor temp: {system.outdoor_temperature}°C")
+            # Check if any zone is in holiday/away mode
+            for z in system.zones:
+                if z.current_special_function and z.current_special_function != "NONE":
+                    lines.append(f"Special function: {z.current_special_function}")
+                    break
+            else:
+                lines.append("Holiday mode: off")
+            for z in system.zones:
+                mode = z.current_special_function or z.heating.operation_mode_heating
+                lines.append(
+                    f"Zone '{z.name}': {z.current_room_temperature}°C "
+                    f"(target: {z.desired_room_temperature_setpoint}°C, mode: {mode})"
+                )
+            for dhw in system.domestic_hot_water:
+                dhw_temp = f"{dhw.current_dhw_temperature}°C" if dhw.current_dhw_temperature else "N/A"
+                lines.append(
+                    f"Hot water: {dhw_temp} "
+                    f"(target: {dhw.tapping_setpoint}°C, mode: {dhw.operation_mode_dhw}, boosting: {dhw.is_cylinder_boosting})"
+                )
+    return "\n".join(lines) if lines else "No systems found"
+
+
+@mcp.tool()
+async def vaillant_set_temperature(temperature: float, duration_hours: float = 3.0) -> str:
+    """Set a temporary temperature override (quick veto) on the heating zone.
+
+    Args:
+        temperature: Target temperature in °C (e.g. 22.0).
+        duration_hours: How long the override lasts (default 3 hours).
+    """
+    cfg = _vaillant_config()
+    if not cfg:
+        return "Error: Vaillant not configured"
+    email, password, brand, country = cfg
+
+    from myPyllant.api import MyPyllantAPI
+
+    async with MyPyllantAPI(email, password, brand, country) as api:
+        async for system in api.get_systems():
+            if not system.zones:
+                return "Error: No heating zones found"
+            zone = system.zones[0]
+            await api.quick_veto_zone_temperature(zone, temperature, duration_hours)
+            return f"Temperature set to {temperature}°C for {duration_hours}h on zone '{zone.name}'"
+    return "Error: No systems found"
+
+
+@mcp.tool()
+async def vaillant_cancel_temperature_override() -> str:
+    """Cancel any active temporary temperature override."""
+    cfg = _vaillant_config()
+    if not cfg:
+        return "Error: Vaillant not configured"
+    email, password, brand, country = cfg
+
+    from myPyllant.api import MyPyllantAPI
+
+    async with MyPyllantAPI(email, password, brand, country) as api:
+        async for system in api.get_systems():
+            if not system.zones:
+                return "Error: No heating zones found"
+            zone = system.zones[0]
+            await api.cancel_quick_veto_zone_temperature(zone)
+            return f"Temperature override cancelled on zone '{zone.name}'"
+    return "Error: No systems found"
+
+
+@mcp.tool()
+async def vaillant_set_holiday(start_date: str, end_date: str) -> str:
+    """Set holiday mode on the heating system. Reduces heating while away.
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format.
+        end_date: End date in YYYY-MM-DD format.
+    """
+    cfg = _vaillant_config()
+    if not cfg:
+        return "Error: Vaillant not configured"
+    email, password, brand, country = cfg
+
+    from datetime import datetime, timezone
+
+    from myPyllant.api import MyPyllantAPI
+
+    start = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    end = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+
+    async with MyPyllantAPI(email, password, brand, country) as api:
+        async for system in api.get_systems():
+            await api.set_holiday(system, start, end)
+            return f"Holiday mode set: {start_date} to {end_date}"
+    return "Error: No systems found"
+
+
+@mcp.tool()
+async def vaillant_cancel_holiday() -> str:
+    """Cancel holiday mode on the heating system."""
+    cfg = _vaillant_config()
+    if not cfg:
+        return "Error: Vaillant not configured"
+    email, password, brand, country = cfg
+
+    from myPyllant.api import MyPyllantAPI
+
+    async with MyPyllantAPI(email, password, brand, country) as api:
+        async for system in api.get_systems():
+            await api.cancel_holiday(system)
+            return "Holiday mode cancelled"
+    return "Error: No systems found"
+
+
+@mcp.tool()
+async def vaillant_boost_hot_water() -> str:
+    """Trigger a one-time hot water boost (heats the water tank now)."""
+    cfg = _vaillant_config()
+    if not cfg:
+        return "Error: Vaillant not configured"
+    email, password, brand, country = cfg
+
+    from myPyllant.api import MyPyllantAPI
+
+    async with MyPyllantAPI(email, password, brand, country) as api:
+        async for system in api.get_systems():
+            if not system.domestic_hot_water:
+                return "Error: No hot water tank found"
+            dhw = system.domestic_hot_water[0]
+            await api.boost_domestic_hot_water(dhw)
+            return "Hot water boost started"
+    return "Error: No systems found"
+
+
+@mcp.tool()
+async def vaillant_set_hot_water_temperature(temperature: float) -> str:
+    """Set the hot water target temperature.
+
+    Args:
+        temperature: Target temperature in °C (typically 40-65).
+    """
+    cfg = _vaillant_config()
+    if not cfg:
+        return "Error: Vaillant not configured"
+    email, password, brand, country = cfg
+
+    from myPyllant.api import MyPyllantAPI
+
+    async with MyPyllantAPI(email, password, brand, country) as api:
+        async for system in api.get_systems():
+            if not system.domestic_hot_water:
+                return "Error: No hot water tank found"
+            dhw = system.domestic_hot_water[0]
+            await api.set_domestic_hot_water_temperature(dhw, temperature)
+            return f"Hot water temperature set to {temperature}°C"
+    return "Error: No systems found"
+
+
 def main():
     import sys
 

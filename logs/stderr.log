@@ -4247,3 +4247,113 @@ INFO:     Uvicorn running on http://0.0.0.0:18791 (Press CTRL+C to quit)
                     INFO     HTTP Request: GET                   _client.py:1740
                              https://192.168.68.107/clip/v2/reso                
                              urce/light "HTTP/1.1 200 OK"                       
+[02/15/26 16:25:50] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             cacd38b9f7244196bd4e                               
+                             6501e0509919                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+                    INFO     HTTP Request: GET                   _client.py:1740
+                             https://192.168.68.107/clip/v2/reso                
+                             urce/light "HTTP/1.1 200 OK"                       
+[02/15/26 16:26:53] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             3552a66c8fc446188045                               
+                             bbedac7afdf7                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+                    INFO     HTTP Request: PUT                   _client.py:1740
+                             https://192.168.68.107/clip/v2/reso                
+                             urce/light/1d49626b-a7d4-446b-8969-                
+                             20cccd23ff8b "HTTP/1.1 200 OK"                     
+                    INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             ab985236c63148039512                               
+                             1a1a4d67be05                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+[02/15/26 16:26:54] INFO     HTTP Request: PUT                   _client.py:1740
+                             https://192.168.68.107/clip/v2/reso                
+                             urce/light/c3d34c09-b363-4e48-be0b-                
+                             14fb35554c0e "HTTP/1.1 200 OK"                     
+[02/15/26 16:26:59] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             2189379fde464b4996cb                               
+                             efcc680d518f                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+                    INFO     HTTP Request: PUT                   _client.py:1740
+                             https://192.168.68.107/clip/v2/reso                
+                             urce/light/1d49626b-a7d4-446b-8969-                
+                             20cccd23ff8b "HTTP/1.1 200 OK"                     
+[02/15/26 16:27:00] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             95cadf4418294b5d8dc1                               
+                             9de7520b7a41                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+                    INFO     HTTP Request: PUT                   _client.py:1740
+                             https://192.168.68.107/clip/v2/reso                
+                             urce/light/c3d34c09-b363-4e48-be0b-                
+                             14fb35554c0e "HTTP/1.1 200 OK"                     
+INFO:     Started server process [41967]
+INFO:     Waiting for application startup.
+[02/15/26 16:46:33] INFO     StreamableHTTP       streamable_http_manager.py:116
+                             session manager                                    
+                             started                                            
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:18791 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[02/15/26 16:46:34] INFO     StreamableHTTP       streamable_http_manager.py:120
+                             session manager                                    
+                             shutting down                                      
+INFO:     Application shutdown complete.
+INFO:     Finished server process [41967]
+INFO:     Started server process [42678]
+INFO:     Waiting for application startup.
+[02/15/26 16:46:35] INFO     StreamableHTTP       streamable_http_manager.py:116
+                             session manager                                    
+                             started                                            
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:18791 (Press CTRL+C to quit)
+[02/15/26 16:46:38] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             0997207188894680b6fe                               
+                             beb471a54515                                       
+[02/15/26 16:46:39] INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
+INFO:     Started server process [50628]
+INFO:     Waiting for application startup.
+[02/15/26 17:02:49] INFO     StreamableHTTP       streamable_http_manager.py:116
+                             session manager                                    
+                             started                                            
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:18791 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[02/15/26 17:02:51] INFO     StreamableHTTP       streamable_http_manager.py:120
+                             session manager                                    
+                             shutting down                                      
+INFO:     Application shutdown complete.
+INFO:     Finished server process [50628]
+INFO:     Started server process [50802]
+INFO:     Waiting for application startup.
+[02/15/26 17:02:52] INFO     StreamableHTTP       streamable_http_manager.py:116
+                             session manager                                    
+                             started                                            
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:18791 (Press CTRL+C to quit)
+[02/15/26 17:02:55] INFO     Created new          streamable_http_manager.py:240
+                             transport with                                     
+                             session ID:                                        
+                             dcc40e4a709a41cc9f58                               
+                             b930209f1163                                       
+                    INFO     Processing request of type            server.py:720
+                             CallToolRequest                                    
