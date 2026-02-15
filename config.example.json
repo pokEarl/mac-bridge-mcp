@@ -1,0 +1,6 @@
+{
+  "hue": {
+    "bridge_ip": "192.168.1.x",
+    "app_key": "your-hue-app-key-here"
+  }
+}
