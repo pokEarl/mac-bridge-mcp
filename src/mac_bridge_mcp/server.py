@@ -2,14 +2,27 @@
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import httpx
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 CONFIG_PATH = Path(__file__).parent.parent.parent / "config.json"
 
-mcp = FastMCP("mac-bridge")
+_http_mode = "--http" in sys.argv
+
+if _http_mode:
+    mcp = FastMCP(
+        "mac-bridge",
+        host="0.0.0.0",
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+        ),
+    )
+else:
+    mcp = FastMCP("mac-bridge")
 
 
 def _load_config() -> dict:
