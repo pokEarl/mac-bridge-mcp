@@ -214,7 +214,18 @@ async def hue_activate_scene(scene_id: str) -> str:
 
 
 def main():
-    mcp.run()
+    import sys
+
+    if "--http" in sys.argv:
+        port = 18791
+        for i, arg in enumerate(sys.argv):
+            if arg == "--port" and i + 1 < len(sys.argv):
+                port = int(sys.argv[i + 1])
+        mcp.settings.port = port
+        mcp.settings.host = "0.0.0.0"
+        mcp.run(transport="streamable-http")
+    else:
+        mcp.run()
 
 
 if __name__ == "__main__":
