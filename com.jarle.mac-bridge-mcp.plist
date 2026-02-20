@@ -9,7 +9,7 @@
         <string>/opt/homebrew/bin/uv</string>
         <string>run</string>
         <string>--directory</string>
-        <string>/Users/jarlesandnes/ai-projects/mac-bridge-mcp</string>
+        <string>/Users/jarlesandnes/ai-workspace/ai-projects/mac-bridge-mcp</string>
         <string>mac-bridge-mcp</string>
         <string>--http</string>
         <string>--port</string>
@@ -20,8 +20,8 @@
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/Users/jarlesandnes/ai-projects/mac-bridge-mcp/logs/stdout.log</string>
+    <string>/Users/jarlesandnes/ai-workspace/ai-projects/mac-bridge-mcp/logs/stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/jarlesandnes/ai-projects/mac-bridge-mcp/logs/stderr.log</string>
+    <string>/Users/jarlesandnes/ai-workspace/ai-projects/mac-bridge-mcp/logs/stderr.log</string>
 </dict>
 </plist>
