@@ -1,6 +1,8 @@
 """Mac Bridge MCP - bridges AI agents to local macOS capabilities."""
 
 import json
+import os
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -9,7 +11,7 @@ import httpx
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
-PROJECT_DIR = Path("/Users/jarlesandnes/ai-projects/mac-bridge-mcp")
+PROJECT_DIR = Path("/Users/jarlesandnes/ai-workspace/ai-projects/mac-bridge-mcp")
 CONFIG_PATH = PROJECT_DIR / "config.json"
 
 _http_mode = "--http" in sys.argv
@@ -415,6 +417,173 @@ async def vaillant_set_hot_water_temperature(temperature: float) -> str:
             await api.set_domestic_hot_water_temperature(dhw, temperature)
             return f"Hot water temperature set to {temperature}°C"
     return "Error: No systems found"
+
+
+# ---------------------------------------------------------------------------
+# Service management tools
+# ---------------------------------------------------------------------------
+
+WORKSPACE_DIR = Path("/Users/jarlesandnes/Desktop/Work/ai-coding-workspace")
+REPOS_DIR = WORKSPACE_DIR / "all-safetywing-repos"
+SERVICE_LOG_DIR = WORKSPACE_DIR / "service-logs"
+
+# In-memory tracking of services started by this MCP
+_running_services: dict[str, dict] = {}
+
+
+def _detect_service_submodule(repo_path: Path) -> str | None:
+    """Find the runnable submodule (*-service or *-backend) in a Gradle project."""
+    for entry in sorted(repo_path.iterdir()):
+        if entry.is_dir() and (entry.name.endswith("-service") or entry.name.endswith("-backend")):
+            return entry.name
+    return None
+
+
+@mcp.tool()
+def start_kotlin_service(
+    service_name: str,
+    gradle_task: str | None = None,
+    env_overrides: dict[str, str] | None = None,
+) -> str:
+    """Start a Kotlin/Micronaut service from source using Gradle.
+
+    Runs ./gradlew :<submodule>:run in the background. Logs are written to
+    the shared workspace so container-based AI agents can read them.
+
+    Args:
+        service_name: Name of the service repo (e.g. "rh-api", "contract-service", "payment"). Must exist in all-safetywing-repos.
+        gradle_task: Gradle task to run. Auto-detected if not provided (finds *-service or *-backend submodule).
+        env_overrides: Optional dict of extra environment variables to set (e.g. {"MICRONAUT_ENVIRONMENTS": "local"}).
+    """
+    repo = REPOS_DIR / service_name
+
+    if not repo.exists():
+        return f"Error: No repo '{service_name}' found in {REPOS_DIR}"
+
+    if service_name in _running_services:
+        info = _running_services[service_name]
+        # Check if still alive
+        try:
+            os.kill(info["pid"], 0)
+            return f"Error: {service_name} is already running (PID: {info['pid']}). Stop it first."
+        except ProcessLookupError:
+            del _running_services[service_name]
+
+    if not gradle_task:
+        submodule = _detect_service_submodule(repo)
+        if not submodule:
+            return f"Error: Could not find *-service or *-backend submodule in {repo}. Pass gradle_task explicitly."
+        gradle_task = f":{submodule}:run"
+
+    SERVICE_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    log_file = SERVICE_LOG_DIR / f"{service_name}.log"
+
+    env = os.environ.copy()
+    env["MICRONAUT_ENVIRONMENTS"] = "local"
+    if env_overrides:
+        env.update(env_overrides)
+
+    # Redirect stdout+stderr to log file. Output is block-buffered (appears in
+    # chunks, fully flushed on process exit or ~8KB boundaries). Good enough for
+    # post-request debugging — just read the file after hitting the endpoint.
+    with open(log_file, "w") as f:
+        process = subprocess.Popen(
+            ["./gradlew", gradle_task, "--console=plain"],
+            cwd=str(repo),
+            stdout=f,
+            stderr=subprocess.STDOUT,
+            env=env,
+            start_new_session=True,
+        )
+
+    _running_services[service_name] = {
+        "pid": process.pid,
+        "log_file": str(log_file),
+        "gradle_task": gradle_task,
+        "repo_path": str(repo),
+    }
+
+    container_log = f"/workspace/work/service-logs/{service_name}.log"
+    return (
+        f"Started {service_name} (PID: {process.pid}, task: {gradle_task})\n"
+        f"Mac log: {log_file}\n"
+        f"Container log: {container_log}\n"
+        f"Note: Service may take 30-60s to fully start. Check logs for 'Startup completed'."
+    )
+
+
+@mcp.tool()
+def stop_service(service_name: str) -> str:
+    """Stop a running service by name or port number.
+
+    Args:
+        service_name: Service name (e.g. "rh-api") or port number (e.g. "8089").
+    """
+    name_or_port = service_name
+    # Try by name first
+    if name_or_port in _running_services:
+        info = _running_services[name_or_port]
+        pid = info["pid"]
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGTERM)
+            del _running_services[name_or_port]
+            return f"Stopped {name_or_port} (killed process group for PID: {pid})"
+        except ProcessLookupError:
+            del _running_services[name_or_port]
+            return f"Process {pid} already gone, cleaned up tracking"
+        except PermissionError:
+            # Fallback: try killing just the PID
+            try:
+                os.kill(pid, signal.SIGTERM)
+                del _running_services[name_or_port]
+                return f"Stopped {name_or_port} (PID: {pid})"
+            except ProcessLookupError:
+                del _running_services[name_or_port]
+                return f"Process {pid} already gone, cleaned up tracking"
+
+    # Try by port using lsof
+    result = subprocess.run(
+        ["lsof", "-ti", f":{name_or_port}"],
+        capture_output=True, text=True,
+    )
+    if result.stdout.strip():
+        pids = result.stdout.strip().split("\n")
+        killed = []
+        for pid in pids:
+            pid = pid.strip()
+            if pid:
+                subprocess.run(["kill", pid])
+                killed.append(pid)
+        # Clean up tracking if we matched a port
+        for svc_name, info in list(_running_services.items()):
+            if str(info.get("port")) == name_or_port:
+                del _running_services[svc_name]
+        return f"Killed processes on port {name_or_port}: PIDs {', '.join(killed)}"
+
+    return f"No running service found for '{name_or_port}'"
+
+
+@mcp.tool()
+def list_services() -> str:
+    """List all services started through this MCP and their current status."""
+    if not _running_services:
+        return "No services currently tracked"
+
+    lines = []
+    for name, info in _running_services.items():
+        pid = info["pid"]
+        try:
+            os.kill(pid, 0)
+            status = "RUNNING"
+        except ProcessLookupError:
+            status = "STOPPED"
+        container_log = f"/workspace/work/service-logs/{name}.log"
+        lines.append(
+            f"- {name}: {status} (PID: {pid}, task: {info['gradle_task']})\n"
+            f"  Mac log: {info['log_file']}\n"
+            f"  Container log: {container_log}"
+        )
+    return "\n".join(lines)
 
 
 def main():
